@@ -36,7 +36,7 @@ public class Application extends Controller {
 			int width = Integer.parseInt(array[1]);
 			int height = Integer.parseInt(array[2]);
 
-			String outFileName = imageUrl + ".jpg";
+			String outFileName = imageUrl;
 
 			File outImageFile = new File(TMP_FILE_DIR + outFileName);
 			if (!outImageFile.exists()) {
@@ -45,8 +45,9 @@ public class Application extends Controller {
 				FileInputStream original = FileUtils.openInputStream(baseImage);
 				ByteArrayOutputStream newImage = resize(original, width, height);
 				FileUtils.writeByteArrayToFile(outImageFile, newImage.toByteArray());
-
 			}
+			
+			return ok(outImageFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
