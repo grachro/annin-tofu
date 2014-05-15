@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
@@ -18,8 +19,40 @@ import views.html.index;
 
 public class Application extends Controller {
 
-	private static final String ORIGINAL_FILE_DIR = "../../temp/annin-tofu/ori/";
-	private static final String TMP_FILE_DIR = "../../temp/annin-tofu/tmp/";
+	private static final Properties APP_PROP = new Properties();
+	private static String ORIGINAL_FILE_DIR;
+	private static String TMP_FILE_DIR;
+
+	static {
+		FileInputStream in;
+		try {
+			in = FileUtils.openInputStream(new File("conf/annin-conf.xml"));
+			APP_PROP.loadFromXML(in);
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+
+		String workDir = APP_PROP.getProperty("work.dir");
+		makeDirsIfNothing(workDir);
+
+		System.out.println("work.dir=" + workDir);
+		ORIGINAL_FILE_DIR = workDir + "/ori/";
+		TMP_FILE_DIR = workDir + "/tmp/";
+
+		makeDirsIfNothing(ORIGINAL_FILE_DIR);
+		makeDirsIfNothing(TMP_FILE_DIR);
+
+		createSampleImage();
+	}
+
+	private static void makeDirsIfNothing(String path) {
+		File file = new File(path);
+		if (!file.exists()) {
+			file.mkdirs();
+		}
+	}
 
 	public static Result index() {
 		return ok(index.render("Your new application is ready."));
@@ -75,6 +108,30 @@ public class Application extends Controller {
 		outputStream.flush();
 
 		return outputStream;
+
+	}
+
+	private static void createSampleImage() {
+		int width = 100;
+		int height = 100;
+
+		BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2 = newImage.createGraphics();
+		g2.drawRect(0, 0, width, height);
+		g2.drawChars("sample".toCharArray(), 0, 6, 20, 20);
+		g2.drawChars("100*100".toCharArray(), 0, 7, 20, 40);
+
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		try {
+			ImageIO.write(newImage, "jpeg", outputStream);
+			outputStream.flush();
+
+			File outImageFile = new File(ORIGINAL_FILE_DIR + "sample.jpg");
+			FileUtils.writeByteArrayToFile(outImageFile, outputStream.toByteArray());
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 
 	}
 }
