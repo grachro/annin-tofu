@@ -32,21 +32,27 @@ public class Application extends Controller {
 		try {
 			String path = imageUrl.substring(0, imageUrl.indexOf("."));
 			String[] array = path.split("_");
-			String srcFile = array[0];
-			int width = Integer.parseInt(array[1]);
-			int height = Integer.parseInt(array[2]);
+			System.out.println("array.length=" + array.length);
+			File outImageFile;
+			if (array.length == 1) {
+				outImageFile = new File(ORIGINAL_FILE_DIR + imageUrl);
+			} else {
+				String srcFile = array[0];
+				int width = Integer.parseInt(array[1]);
+				int height = Integer.parseInt(array[2]);
 
-			String outFileName = imageUrl;
+				String outFileName = imageUrl;
 
-			File outImageFile = new File(TMP_FILE_DIR + outFileName);
-			if (!outImageFile.exists()) {
-				File baseImage = new File(ORIGINAL_FILE_DIR + srcFile + ".jpg");
+				outImageFile = new File(TMP_FILE_DIR + outFileName);
+				if (!outImageFile.exists()) {
+					File baseImage = new File(ORIGINAL_FILE_DIR + srcFile + ".jpg");
 
-				FileInputStream original = FileUtils.openInputStream(baseImage);
-				ByteArrayOutputStream newImage = resize(original, width, height);
-				FileUtils.writeByteArrayToFile(outImageFile, newImage.toByteArray());
+					FileInputStream original = FileUtils.openInputStream(baseImage);
+					ByteArrayOutputStream newImage = resize(original, width, height);
+					FileUtils.writeByteArrayToFile(outImageFile, newImage.toByteArray());
+				}
 			}
-			
+
 			return ok(outImageFile);
 		} catch (IOException e) {
 			e.printStackTrace();
